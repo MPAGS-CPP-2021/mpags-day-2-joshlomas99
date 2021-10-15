@@ -19,8 +19,9 @@ int main(int argc, char* argv[])
     std::string inputFile{""};
     std::string outputFile{""};
 
-    bool exitProcess = processCommandLine(cmdLineArgs, helpRequested, versionRequested, inputFile, outputFile);
-    if (exitProcess){
+    // Process command line arguments, exit if there is a failure
+    const bool cmdLineStatus{processCommandLine(cmdLineArgs, helpRequested, versionRequested, inputFile, outputFile)};
+    if (!cmdLineStatus){
         return 1;
     }
 
@@ -152,7 +153,7 @@ bool processCommandLine(const std::vector<std::string> cmdLineArgs, bool& helpRe
                 std::cerr << "[error] -i requires a filename argument"
                           << std::endl;
                 // exit main with non-zero return to indicate failure
-                return true;
+                return false;
             }
             else {
                 // Got filename, so assign value and advance past it
@@ -167,7 +168,7 @@ bool processCommandLine(const std::vector<std::string> cmdLineArgs, bool& helpRe
                 std::cerr << "[error] -o requires a filename argument"
                           << std::endl;
                 // exit main with non-zero return to indicate failure
-                return true;
+                return false;
             }
             else {
                 // Got filename, so assign value and advance past it
@@ -180,9 +181,10 @@ bool processCommandLine(const std::vector<std::string> cmdLineArgs, bool& helpRe
             // exit status to indicate failure
             std::cerr << "[error] unknown argument '" << cmdLineArgs[i]
                       << "'\n";
-            return true;
+            return false;
         }
 
     }
-    return false;
+    // Return as true if the process runs successfully
+    return true;
 }
