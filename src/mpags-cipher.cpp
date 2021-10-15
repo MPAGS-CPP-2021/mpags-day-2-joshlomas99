@@ -57,28 +57,49 @@ int main(int argc, char* argv[])
 
     // Initialise variables
     char inputChar{'x'};
-    std::string inputText;
+    std::string inputText{""};
+    std::string RawinputText{""};
 
     // Read in user input from stdin/file
-    // Warn that input file option not yet implemented
+    // If input file is specified, read to input_text variable
     if (!inputFile.empty()) {
-        std::cerr << "[warning] input from file ('" << inputFile
-                  << "') not implemented yet, using stdin\n";
+        std::ifstream in_file {inputFile};
+        bool ok_to_read = in_file.good();
+        if (ok_to_read){
+            in_file >> RawinputText;
+            for (size_t i{0}; i < RawinputText.length(); i++){
+                inputChar = RawinputText[i];
+                inputText += tranformChar(inputChar);
+            }
+        }
+        else {
+            std::cerr << "[error] input file ('" << inputFile
+                      << "') not opened correctly, exiting.";
+        }
     }
-
-    // loop over each character from user input
-    while (std::cin >> inputChar) {
-        inputText += tranformChar(inputChar);
+    else {
+        // If no input file is specified, loop over each character from user input
+        while (std::cin >> inputChar) {
+            inputText += tranformChar(inputChar);
+        }
     }
 
     // Print out the transliterated text
 
-    // Warn that output file option not yet implemented
+    // If output file is specified, write output to it and exit
     if (!outputFile.empty()) {
-        std::cerr << "[warning] output to file ('" << outputFile
-                  << "') not implemented yet, using stdout\n";
+        std::ofstream out_file {outputFile, std::ios::app};
+        bool ok_to_write = out_file.good();
+        if (ok_to_write){
+            out_file << inputText + "\n";
+            return 0;
+        }
+        else {
+            std::cerr << "[error] output file ('" << outputFile
+                      << "') not opened correctly, exiting.";
+        }
     }
-
+    // If no output file is specified, write output to command line and exit
     std::cout << inputText << std::endl;
 
     // No requirement to return from main, but we do so for clarity
