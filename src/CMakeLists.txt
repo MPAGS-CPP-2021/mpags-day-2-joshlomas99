@@ -21,6 +21,8 @@ add_executable(mpags-cipher
     MPAGSCipher/TransformChar.hpp
     MPAGSCipher/ProcessCommandLine.cpp
     MPAGSCipher/ProcessCommandLine.hpp
+    MPAGSCipher/runCaesarCipher.cpp
+    MPAGSCipher/runCaesarCipher.hpp
     )
 
 # - Use our standard set of flags

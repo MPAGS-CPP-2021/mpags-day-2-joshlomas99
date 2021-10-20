@@ -8,8 +8,9 @@
 #include <cctype>
 
 // Our project headers
-#include "TransformChar.hpp"
-#include "ProcessCommandLine.hpp"
+#include "MPAGSCipher/TransformChar.hpp"
+#include "MPAGSCipher/ProcessCommandLine.hpp"
+#include "MPAGSCipher/runCaesarCipher.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -19,11 +20,13 @@ int main(int argc, char* argv[])
     // Options that might be set by the command-line arguments
     bool helpRequested{false};
     bool versionRequested{false};
+    bool encrypt{true};
     std::string inputFile{""};
     std::string outputFile{""};
+    size_t key{0};
 
     // Process command line arguments, exit if there is a failure
-    const bool cmdLineStatus{processCommandLine(cmdLineArgs, helpRequested, versionRequested, inputFile, outputFile)};
+    const bool cmdLineStatus{processCommandLine(cmdLineArgs, helpRequested, versionRequested, inputFile, outputFile, encrypt, key)};
     if (!cmdLineStatus){
         return 1;
     }
@@ -35,12 +38,16 @@ int main(int argc, char* argv[])
             << "Usage: mpags-cipher [-h/--help] [--version] [-i <file>] [-o <file>]\n\n"
             << "Encrypts/Decrypts input alphanumeric text using classical ciphers\n\n"
             << "Available options:\n\n"
+            << "  -e INT (0 or 1)  Select whether to decrypt (0) or encrypt (1) input text\n"
+            << "                   Defaults to 1\n\n"
             << "  -h|--help        Print this help message and exit\n\n"
-            << "  --version        Print version information\n\n"
             << "  -i FILE          Read text to be processed from FILE\n"
             << "                   Stdin will be used if not supplied\n\n"
+            << "  -k INT (>= 0)    Specify key for Caesar cipher\n"
+            << "                   No cipher will run if not supplied\n\n"
             << "  -o FILE          Write processed text to FILE\n"
             << "                   Stdout will be used if not supplied\n\n"
+            << "  --version        Print version information\n\n"
             << std::endl;
         // Help requires no further action, so return from main
         // with 0 used to indicate success
@@ -64,17 +71,15 @@ int main(int argc, char* argv[])
     // If input file is specified, read to input_text variable
     if (!inputFile.empty()) {
         std::ifstream in_file {inputFile};
-        bool ok_to_read = in_file.good();
-        if (ok_to_read){
-            in_file >> RawinputText;
-            for (size_t i{0}; i < RawinputText.length(); i++){
-                inputChar = RawinputText[i];
+        if (in_file.good()){
+            while (in_file >> inputChar){
                 inputText += tranformChar(inputChar);
             }
         }
         else {
             std::cerr << "[error] input file ('" << inputFile
                       << "') not opened correctly, exiting.";
+            return 1;
         }
     }
     else {
@@ -84,19 +89,22 @@ int main(int argc, char* argv[])
         }
     }
 
-    // Print out the transliterated text
+    // Apply a cipher to the transliterated text if a key is given
+    if (key != 0){
+        inputText = runCaesarCipher(inputText, key, encrypt);
+    }
 
     // If output file is specified, write output to it and exit
     if (!outputFile.empty()) {
         std::ofstream out_file {outputFile, std::ios::app};
-        bool ok_to_write = out_file.good();
-        if (ok_to_write){
+        if (out_file.good()){
             out_file << inputText + "\n";
             return 0;
         }
         else {
             std::cerr << "[error] output file ('" << outputFile
                       << "') not opened correctly, exiting.";
+            return 1;
         }
     }
     // If no output file is specified, write output to command line and exit
