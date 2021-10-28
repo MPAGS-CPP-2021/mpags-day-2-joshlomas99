@@ -38,3 +38,10 @@
 *.exe
 *.out
 *.app
+
+mpags-cipher
+#devcontainer.json
+#Dockerfile
+settings.json
+test_input.in
+test_output.out
